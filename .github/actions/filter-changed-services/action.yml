@@ -1,0 +1,46 @@
+name: Filter services
+description: List changed files and determine which microservices were changed
+
+inputs:
+  changed-files:
+    description: List of changed files from changed-files action
+    required: true
+
+outputs:
+  services:
+    description: JSON array of changed service names
+    value: ${{ steps.process.outputs.services }}
+  has_services_changes:
+    description: Boolean indicating if any services changed
+    value: ${{ steps.process.outputs.has_services_changes }}
+
+runs:
+  using: composite
+  steps:
+    - id: process
+      shell: bash
+      run: |
+        CHANGED_FILES="${{ inputs.changed-files }}"
+        
+        # Логируем все измененные файлы (функциональность list-changed)
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "No changes in services detected"
+          echo "has_services_changes=false" >> $GITHUB_OUTPUT
+          echo "services=[]" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        echo "Changed files in microservices detected:"
+        # Преобразуем строку с пробелами в список для итерации
+        echo "$CHANGED_FILES" | tr ' ' '\n' | while IFS= read -r file; do
+          if [ -n "$file" ]; then
+            echo "  - $file"
+          fi
+        done
+        
+        # Определяем измененные сервисы (функциональность determine-changed-services)
+        SERVICES=$(echo "$CHANGED_FILES" | tr ' ' '\n' | grep -o 'services/[^/]*' | cut -d'/' -f2 | sort | uniq | jq -R -s -c 'split("\n") | map(select(. != ""))')
+        
+        echo "Detected changed services: ${SERVICES}"
+        echo "has_services_changes=true" >> $GITHUB_OUTPUT
+        echo "services=${SERVICES}" >> $GITHUB_OUTPUT

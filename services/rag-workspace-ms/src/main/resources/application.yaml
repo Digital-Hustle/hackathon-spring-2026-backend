@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: rag-workspace-ms
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  ai:
+    openai:
+      api-key: ...
+      base-url: https://hackai.centrinvest.ru:6620
+      embedding:
+        options:
+          model: Qwen3-Embedding-0.6B
+
+  cloud:
+    config:
+      uri: http://localhost:5000
+      fail-fast: true
+  config:
+    import: "configserver:"
+
+minio:
+  endpoint: http://${MINIO_HOST}:${MINIO_PORT}
+  access-key: ${MINIO_USERNAME}
+  secret-key: ${MINIO_KEY}
+  bucket-name: ${MINIO_BUCKET}

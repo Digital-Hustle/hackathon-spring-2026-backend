@@ -1,0 +1,81 @@
+name: Build Java Service
+description: Build Java service with Gradle including caching and setup
+
+inputs:
+  service:
+    description: Service name (directory in services/)
+    required: true
+  java-version:
+    description: Java version
+    required: false
+    default: '21'
+  java-distribution:
+    description: Java distribution
+    required: false
+    default: 'temurin'
+  gradle-version:
+    description: Gradle version
+    required: false
+    default: '9.3.0'
+  skip-tests:
+    description: Skip tests (pass -x test to Gradle)
+    required: false
+    default: 'true'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK ${{ inputs.java-version }}
+      uses: actions/setup-java@v5
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: ${{ inputs.java-distribution }}
+
+    - name: Verify service directory
+      shell: bash
+      run: |
+        echo "Checking service directory: services/${{ inputs.service }}"
+        if [ ! -d "services/${{ inputs.service }}" ]; then
+          echo "::error::Directory services/${{ inputs.service }} does not exist!"
+          exit 1
+        fi
+        echo "Service directory exists"
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: ${{ inputs.gradle-version }}
+        cache-read-only: false
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ inputs.service }}-${{ hashFiles('services/${{ inputs.service }}/build.gradle*', 'gradle.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-${{ inputs.service }}-
+          ${{ runner.os }}-gradle-
+
+    - name: Build with PostgreSQL service (if JOOQ cache miss)
+      shell: bash
+      if: steps.cache-jooq.outputs.cache-hit != 'true'
+      working-directory: ./services/${{ matrix.service }}
+      env:
+        CI: 'true'
+        USERNAME_GITHUB: ${{ secrets.USERNAME_GITHUB }}          # или ваш username
+        TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "=== Building with PostgreSQL service for JOOQ generation ==="
+        echo "Service: ${{ matrix.service }}"
+        echo "Using PostgreSQL 16 from GitHub Actions service"
+        
+        sleep 5
+        
+        echo "Testing PostgreSQL connection..."
+        if ! pg_isready -h localhost -p 5432; then
+          echo "::error::PostgreSQL is not ready!"
+          exit 1
+        fi
+        
+        gradle build -x test --no-daemon

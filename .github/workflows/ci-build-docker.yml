@@ -1,0 +1,42 @@
+name: Spring microservices monorepo CI (Merge)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+    types: [closed]
+
+jobs:
+  common-jobs:
+    uses: ./.github/workflows/common-jobs.yml
+
+  build-and-push-docker:
+    needs: common-jobs
+    if: |
+      needs.common-jobs.outputs.has_services_changes == 'true' &&
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) ||
+        (github.event_name == 'pull_request' && github.event.pull_request.merged == true && 
+            (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'develop'))
+      )
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.common-jobs.outputs.services) }}
+    steps:
+      - name: checkout repo
+        id: checkout-repo
+        uses: actions/checkout@v5
+
+      - name: docker build and push
+        id: docker
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          token: ${{ secrets.DOCKER_HUB_TOKEN }}
+          files: ${{ matrix.service }}

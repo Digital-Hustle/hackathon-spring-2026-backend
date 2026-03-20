@@ -1,0 +1,24 @@
+@path=http://localhost:4002/api/v1/routes/generate
+
+### POST
+POST {{ path }}
+Content-Type: application/json
+
+{
+  "startPoint": {
+    "lat": 47.205204,
+    "lon": 39.654682
+  },
+  "endPoint": {
+    "lat": 47.268900,
+    "lon": 39.936000
+  },
+  "budget": "средний",
+  "style": "культурный отдых",
+  "categories": [
+    "NATURE",
+    "HISTORICAL",
+    "CULTURE"
+  ],
+  "routeLength": "Оптимальный"
+}

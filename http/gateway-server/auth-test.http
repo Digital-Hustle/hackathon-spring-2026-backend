@@ -1,0 +1,25 @@
+@path = http://localhost:5001/auth/api/v1/auth
+
+### POST register
+POST {{path}}/register
+Content-Type: application/json
+
+{
+  "username": "Pasha10",
+  "password": "root",
+  "passwordConfirmation": "root"
+}
+
+### POST login
+POST  {{path}}/login
+Content-Type: application/json
+
+{
+  "username": "Pasha4",
+  "password": "root"
+}
+
+> {%
+    client.global.set("accessToken", response.body.accessToken)
+    client.global.set("refreshToken", response.body.refreshToken)
+%}
