@@ -1,0 +1,9 @@
+.idea
+.todo
+.gradle
+build
+gradle
+
+**/.env
+**/gradlew
+**/gradlew.bat

@@ -1,0 +1,35 @@
+@path = http://localhost:5001/profile/api/v1/profile
+
+@profileId=10d49a19-1159-4a10-9b55-4bf17011e13c
+
+### GET by id
+GET {{path}}/{{profileId}}
+Authorization: Bearer {{accessToken}}
+
+### POST create new profile
+POST {{path}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Artyom",
+  "surname": "Chiba",
+  "dateOfBirth": "2000-10-18",
+  "image": null
+}
+
+### PUT update profile
+PUT {{path}}/{{profileId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "profileId": "{{profileId}}",
+  "name": "Artyom",
+  "surname": "Timur",
+  "dateOfBirth": "2000-10-18"
+}
+
+### DELETE by id
+DELETE {{path}}/{{profileId}}
+Authorization: Bearer {{accessToken}}

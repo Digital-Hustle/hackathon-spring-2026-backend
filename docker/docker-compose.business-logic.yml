@@ -1,0 +1,5 @@
+services:
+
+networks:
+  tourist-helper-network:
+    external: true

@@ -1,0 +1,11 @@
+@path=http://localhost:4002/api/v1/places
+
+### GET recieve all
+POST {{ path }}
+Content-Type: application/json
+
+{
+  "rangeLat": [12.13, 60.00],
+  "rangeLon": [30.00, 61.12],
+  "categories": ["NATURE", "FOOD"]
+}

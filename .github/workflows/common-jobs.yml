@@ -1,0 +1,76 @@
+name: Common Services Workflow
+
+on:
+  workflow_call:
+    outputs:
+      services:
+        description: "List of changed services"
+        value: ${{ jobs.detect-changes.outputs.services }}
+      has_services_changes:
+        description: "Whether services were changed"
+        value: ${{ jobs.detect-changes.outputs.has_services_changes }}
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.filter.outputs.services }}
+      has_services_changes: ${{ steps.filter.outputs.has_services_changes }}
+    steps:
+      - name: checkout repo
+        id: checkout-repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v46
+        with:
+          files: |
+            services/**
+
+      - name: filter services
+        id: filter
+        uses: ./.github/actions/filter-changed-services
+        with:
+          changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+
+  build-and-test:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_services_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.detect-changes.outputs.services) }}
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+          # TODO вот тут хардкор. Нужно править
+          POSTGRES_DB: profile_db
+
+          DB_HOST: "localhost"
+          # TODO вот тут хардкор. Нужно править
+          DB_NAME: "profile_db"
+
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: checkout repo
+        id: checkout-repo
+        uses: actions/checkout@v5
+
+      - name: Build Java service
+        uses: ./.github/actions/build-service
+        with:
+          service: ${{ matrix.service }}

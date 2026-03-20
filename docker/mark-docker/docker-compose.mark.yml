@@ -1,0 +1,139 @@
+name: backend-with-dependencies-for-mark
+
+services:
+  ############################   INFRASTRUCTURE   ###################################################
+  postgres:
+    image: postgres:16-alpine
+    container_name: mark-postgres-container
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      PGDATA: /data/postgres
+    networks:
+      - mark-network
+    volumes:
+      - postgres-volume:/data/postgres
+      - ./scripts/db-initializer.sh:/usr/local/bin/db-initializer.sh
+      - ./scripts/custom-db-entrypoint.sh:/custom-db-entrypoint.sh
+    entrypoint: /custom-db-entrypoint.sh
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vault:
+    image: hashicorp/vault:1.19
+    container_name: mark-vault-container
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: myroot
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    networks:
+      - mark-network
+    volumes:
+      - ./scripts/vault-initializer.sh:/usr/local/bin/vault-initializer.sh
+      - ./scripts/custom-vault-entrypoint.sh:/custom-vault-entrypoint.sh
+    entrypoint: /custom-vault-entrypoint.sh
+
+  minio:
+    image: minio/minio
+    container_name: mark-minio-container
+    ports:
+      - "9002:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=root1234
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-volume:/data
+    networks:
+      - mark-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ############################   SERVICES   ###################################################
+  config-server:
+    image: danilchet/config-server:mark
+    container_name: config-server-container
+    environment:
+      - "spring.cloud.config.server.vault.host=vault"
+    networks:
+      - mark-network
+    ports:
+      - "5000:5000"
+    depends_on:
+      vault:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  gateway-server:
+    image: danilchet/gateway-server:mark
+    container_name: gateway-server-container
+    networks:
+      - mark-network
+    ports:
+      - "5001:5001"
+    environment:
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:5000
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:5000
+    depends_on:
+      config-server:
+        condition: service_healthy
+
+  auth-ms:
+    image: danilchet/auth-ms:mark
+    container_name: auth-ms-container
+    networks:
+      - mark-network
+    ports:
+      - "5002:5002"
+    environment:
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:5000
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:5000
+    depends_on:
+      config-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  profile-ms:
+    image: danilchet/profile-ms:mark
+    container_name: profile-ms-container
+    networks:
+      - mark-network
+    ports:
+      - "5003:5003"
+    environment:
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:5000
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:5000
+    depends_on:
+      config-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+networks:
+  mark-network:
+volumes:
+  postgres-volume:
+  minio-volume:

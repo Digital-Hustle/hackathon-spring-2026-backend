@@ -1,0 +1,33 @@
+services:
+  config-server:
+    image: danilchet/config-server
+    container_name: config-server-container
+    environment:
+      - "spring.cloud.config.server.vault.host=vault"
+    networks:
+      - tourist-helper-network
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  auth-ms:
+    image: danilchet/auth-ms
+    container_name: auth-ms-container
+    networks:
+      - tourist-helper-network
+    ports:
+      - "5001:5001"
+    environment:
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:5000
+      - SPRING_CONFIG_IMPORT=configserver:http://config-server:5000
+
+networks:
+  tourist-helper-network:
+    external: true

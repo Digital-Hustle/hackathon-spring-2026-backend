@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: gateway-server
+  cloud:
+    config:
+      uri: http://localhost:5000
+      fail-fast: true
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: "http://192.168.0.101:3000"
+                allowed-methods: "*"
+                allowedHeaders: "*"
+                allow-credentials: true
+                exposed-headers:
+                  - Authorization
+                  - Content-Type
+
+  config:
+    import: "configserver:"
