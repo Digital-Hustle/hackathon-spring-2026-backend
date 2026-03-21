@@ -4,9 +4,11 @@ import com.hustle.rag_workspace_ms.model.entity.DocumentMeta;
 import com.hustle.rag_workspace_ms.repository.DocumentMetaRepository;
 import com.hustle.rag_workspace_ms.service.entity.DocumentMetaService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -16,9 +18,8 @@ public class DocumentMetaServiceImpl implements DocumentMetaService {
     private final DocumentMetaRepository documentMetaRepository;
 
     @Override
-    public DocumentMeta getByOwnerId(UUID workspaceId) {
-        return documentMetaRepository.findByWorkspaceId(workspaceId)
-                .orElseThrow(EntityNotFoundException::new);
+    public List<DocumentMeta> getAllByOwnerId(UUID workspaceId) {
+        return documentMetaRepository.findAllByWorkspaceId(workspaceId);
     }
 
     @Override
@@ -43,6 +44,12 @@ public class DocumentMetaServiceImpl implements DocumentMetaService {
                         .id(id)
                         .build()
         );
+    }
+
+    @Transactional
+    @Override
+    public void updateActivity(UUID id, Boolean isActive) {
+        documentMetaRepository.updateActivity(id, isActive);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.hustle.rag_workspace_ms.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hustle.rag_workspace_ms.helper.JsonbUtils;
+import com.hustle.rag_workspace_ms.utils.JsonbUtils;
 import com.hustle.rag_workspace_ms.model.VectorStoreChunk;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.embedding.EmbeddingModel;

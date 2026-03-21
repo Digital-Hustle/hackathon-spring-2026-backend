@@ -9,7 +9,7 @@ spring:
 
   ai:
     openai:
-      api-key: ...
+      api-key: hackaton2026
       base-url: https://hackai.centrinvest.ru:6620
       embedding:
         options:

@@ -1,4 +1,4 @@
-package com.hustle.rag_workspace_ms.helper;
+package com.hustle.rag_workspace_ms.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

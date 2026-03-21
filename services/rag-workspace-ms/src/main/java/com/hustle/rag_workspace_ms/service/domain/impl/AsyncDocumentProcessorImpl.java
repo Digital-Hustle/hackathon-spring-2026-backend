@@ -4,6 +4,7 @@ import com.hustle.rag_workspace_ms.enums.FileProcessingStatus;
 import com.hustle.rag_workspace_ms.factory.FileParserFactory;
 import com.hustle.rag_workspace_ms.model.entity.DocumentMeta;
 import com.hustle.rag_workspace_ms.repository.VectorStoreRepository;
+import com.hustle.rag_workspace_ms.service.domain.AsyncDocumentProcessor;
 import com.hustle.rag_workspace_ms.service.entity.DocumentMetaService;
 import com.hustle.rag_workspace_ms.utils.FileParser;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AsyncDocumentProcessor {
+public class AsyncDocumentProcessorImpl implements AsyncDocumentProcessor {
 
     private final FileParserFactory fileParserFactory;
     private final VectorStoreRepository vectorStoreRepository;
@@ -32,7 +33,7 @@ public class AsyncDocumentProcessor {
     private final TextSplitter textSplitter;
     private final DocumentMetaService documentMetaService;
 
-     @Async
+    @Async
     public void processDocument(UUID workspaceId, DocumentMeta documentMeta, MultipartFile document) {
         UUID documentId = documentMeta.getId();
 

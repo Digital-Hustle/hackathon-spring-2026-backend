@@ -1,9 +1,7 @@
 package com.hustle.rag_workspace_ms.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.hustle.rag_workspace_ms.enums.WorkspaceCardType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,14 +10,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-// TODO обавить favourite boolean
-//  sizeType enum BIG MEDIUM SMALL
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@Table(name = "workspace", schema = "rag")
+@Table(name = "workspaces", schema = "rag")
 public class Workspace {
 
     @Id
@@ -28,11 +24,18 @@ public class Workspace {
     @Column(nullable = false)
     private String title;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private WorkspaceCardType cardType;
+
     @Column
     private String icon;
 
     @Column
     private String type;
+
+    @Column(name = "favourite")
+    private Boolean isFavourite;
 
     @Column
     private LocalDateTime createdAt;

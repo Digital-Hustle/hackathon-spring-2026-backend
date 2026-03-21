@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS documents_meta
     extension     VARCHAR(20)  NOT NULL,
     size          BIGINT       NOT NULL,
     status        VARCHAR(20)  NOT NULL,
+    active        BOOLEAN          DEFAULT TRUE,
     error_message TEXT,
     workspace_id  UUID         NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
     created_at    TIMESTAMP        DEFAULT NOW()

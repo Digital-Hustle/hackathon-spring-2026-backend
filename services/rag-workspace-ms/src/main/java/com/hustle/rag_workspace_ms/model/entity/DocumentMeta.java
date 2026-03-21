@@ -22,29 +22,32 @@ public class DocumentMeta {
     @Id
     private UUID id;
 
-    @Column(name = "originalName", nullable = false)
+    @Column(nullable = false)
     private String originalName;
 
-    @Column(name = "contentType", nullable = false)
+    @Column(nullable = false)
     private String contentType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "extension", nullable = false)
+    @Column(nullable = false)
     private FileExtension extension;
 
-    @Column(name = "size", nullable = false)
+    @Column(nullable = false)
     private Long size;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private FileProcessingStatus status;
 
-    @Column(name = "errorMessage")
+    @Column
     private String errorMessage;
 
-    @Column(name = "workspaceId", nullable = false)
+    @Column(name = "active")
+    private Boolean isActive;
+
+    @Column(nullable = false)
     private UUID workspaceId;
 
-    @Column(name = "createdAt")
+    @Column
     private LocalDateTime createdAt;
 }

@@ -25,7 +25,10 @@ public class SecurityConfig {
                 "http://192.168.0.101:3000",
                 "http://192.168.180.250:3000",
                 "http://localhost:8081",
-                "https://websocketking.com"
+                "https://websocketking.com",
+                "http://192.168.0.100",
+                "http://192.168.0.100:3000",
+                "null"
         ));
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");

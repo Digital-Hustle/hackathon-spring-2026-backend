@@ -1,4 +1,4 @@
-package com.hustle.rag_workspace_ms.dto.response;
+package com.hustle.rag_workspace_ms.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record DocumentMetaRs(
+public record DocumentMetaDto(
 
         UUID id,
 

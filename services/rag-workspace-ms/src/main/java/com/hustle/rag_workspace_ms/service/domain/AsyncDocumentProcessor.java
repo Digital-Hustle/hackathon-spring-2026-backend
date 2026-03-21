@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
-public interface DocumentServiceProc {
+public interface AsyncDocumentProcessor {
 
-    DocumentMeta processUpload(UUID workspaceId, MultipartFile file);
+    void processDocument(UUID workspaceId, DocumentMeta documentMeta, MultipartFile document);
 }
