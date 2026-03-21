@@ -4,6 +4,13 @@ spring:
       server:
         webflux:
           routes:
+            - id: workspace-service-api
+              uri: http://localhost:4002
+              predicates:
+                - Path=/workspace/api/v1/**
+              filters:
+                - RewritePath=/workspace/api/v1/(?<path>.*), /api/v1/$\{path}
+
             - id: auth-service-api
               uri: http://localhost:5002
               predicates:
