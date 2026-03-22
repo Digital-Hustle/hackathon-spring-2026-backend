@@ -11,6 +11,13 @@ spring:
               filters:
                 - RewritePath=/workspace/api/v1/(?<path>.*), /api/v1/$\{path}
 
+            - id: workspace-processor-service-api
+              uri: http://localhost:4003
+              predicates:
+                - Path=/workspace-processor/api/v1/**
+              filters:
+                - RewritePath=/workspace-processor/api/v1/(?<path>.*), /api/v1/$\{path}
+
             - id: auth-service-api
               uri: http://localhost:5002
               predicates:
