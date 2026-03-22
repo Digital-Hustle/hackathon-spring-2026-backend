@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: workspace-processor-ms
+  cloud:
+    config:
+      enabled: false
+#  datasource:
+#    url: jdbc:postgresql://localhost:5433/postgres
+#    username: postgres
+#    password: root
+#    driver-class-name: org.postgresql.Driver
+#  liquibase:
+#    enabled: false
+#    change-log: db/changelog/db.changelog-master.yml
+
+server:
+  port: 4003
+
+logging:
+  level:
+    root: INFO
+    ru.ci_trainee: DEBUG
+
+yandex:
+  gpt:
+    api:
+      key: ""
+  tts:
+    iam-token: ""
+    folder-id: ""
+
+services:
+  rag:
+    url: ""
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: admin
+  secret-key: root1234
+  bucket-name: workspace-processor-ms
+
+app:
+  minio:
+    enabled: true
+  rag:
+    enabled: true
+  gpt:
+    stub-enabled: false
+  audio:
+    stub-text: >
+      Retrieval-Augmented Generation, или RAG, — это подход, при котором
+      языковая модель отвечает на вопрос не только на основе своих знаний,
+      но и с учетом внешних документов. Сначала система ищет релевантные
+      фрагменты текста, затем передает их в модель, и модель формирует ответ
+      на основе найденного контекста.

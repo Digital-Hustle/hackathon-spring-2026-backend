@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 4002
+
+app:
+  city-coordinates:
+    bottom-left-corner:
+      latitude: 47.20000
+      longitude: 39.55555
+    top-left-corner:
+      latitude: 47.30600
+      longitude: 39.55555
+    bottom-right-corner:
+      latitude: 47.20000
+      longitude: 39.90500
+    top-right-corner:
+      latitude: 47.30600
+      longitude: 39.90500
