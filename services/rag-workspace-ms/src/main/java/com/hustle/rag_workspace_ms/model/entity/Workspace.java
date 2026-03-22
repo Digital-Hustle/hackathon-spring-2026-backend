@@ -34,6 +34,7 @@ public class Workspace {
     @Column
     private String type;
 
+    // TODO проверить, что не такой же проблемы для файла и isActive
     @Column(name = "favourite")
     private Boolean isFavourite;
 

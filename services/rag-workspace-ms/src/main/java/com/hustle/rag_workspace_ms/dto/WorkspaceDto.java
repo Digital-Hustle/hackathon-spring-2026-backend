@@ -19,7 +19,7 @@ public record WorkspaceDto(
 
         String type,
 
-        boolean isFavorite,
+        Boolean isFavourite,
 
         LocalDateTime createdAt
 ) {

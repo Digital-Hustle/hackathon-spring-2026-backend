@@ -1,6 +1,8 @@
 package com.hustle.rag_workspace_ms.controller.impl;
 
 import com.hustle.rag_workspace_ms.controller.ChatController;
+import com.hustle.rag_workspace_ms.dto.MessageDto;
+import com.hustle.rag_workspace_ms.dto.request.SendMessageRq;
 import com.hustle.rag_workspace_ms.dto.response.ChatRs;
 import com.hustle.rag_workspace_ms.mapper.ChatMessageMapper;
 import com.hustle.rag_workspace_ms.model.entity.Message;
@@ -10,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,5 +28,13 @@ public class ChatControllerImpl implements ChatController {
         return ChatRs.builder()
                 .messages(chatMessageMapper.convert(messages))
                 .build();
+    }
+
+    // TODO вот тут спросить у ребят, нужно ли им передавать при создании повторно весь чат целиком
+    @Override
+    public MessageDto sendMessage(UUID workspaceId, SendMessageRq sendMessageRq) {
+        Message message = chatMessageService.sendNew(workspaceId, sendMessageRq.content());
+
+        return chatMessageMapper.convert(message);
     }
 }

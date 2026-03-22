@@ -1,13 +1,14 @@
 package com.hustle.rag_workspace_ms.service.entity.impl;
 
+import com.hustle.rag_workspace_ms.factory.ChatMessageFactory;
 import com.hustle.rag_workspace_ms.model.entity.Message;
 import com.hustle.rag_workspace_ms.repository.ChatMessageRepository;
-import com.hustle.rag_workspace_ms.repository.ChatRepository;
 import com.hustle.rag_workspace_ms.service.entity.ChatMessageService;
-import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -20,7 +21,19 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     public Page<Message> getByChatId(UUID workspaceId, Pageable pageable) {
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
 
-        return chatMessageRepository.findAllByWorkspaceId(workspaceId, pageable);
+        return chatMessageRepository.findAllByWorkspaceId(workspaceId, sortedPageable);
+    }
+
+    @Override
+    public Message sendNew(UUID workspaceId, String content) {
+        Message message = ChatMessageFactory.newProcessingPhotoMetaInfo(workspaceId, content);
+
+        return chatMessageRepository.save(message);
     }
 }

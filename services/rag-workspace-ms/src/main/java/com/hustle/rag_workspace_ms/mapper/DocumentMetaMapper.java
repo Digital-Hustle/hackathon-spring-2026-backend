@@ -5,6 +5,7 @@ import com.hustle.rag_workspace_ms.dto.DocumentTextDto;
 import com.hustle.rag_workspace_ms.model.DocumentText;
 import com.hustle.rag_workspace_ms.model.entity.DocumentMeta;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DocumentMetaMapper {
 
+    @Mapping(target = "isActive", source = "isActive")
     DocumentMetaDto convert(DocumentMeta source);
 
     DocumentTextDto convert(DocumentText source);

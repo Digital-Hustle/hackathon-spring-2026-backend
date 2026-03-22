@@ -4,6 +4,7 @@ import com.hustle.rag_workspace_ms.factory.WorkspaceFactory;
 import com.hustle.rag_workspace_ms.model.entity.Workspace;
 import com.hustle.rag_workspace_ms.repository.WorkspaceRepository;
 import com.hustle.rag_workspace_ms.service.entity.WorkspaceService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Override
     public Page<Workspace> getAll(Pageable pageable) {
         return workspaceRepository.findAll(pageable);
+    }
+
+    @Override
+    public Workspace getById(UUID id) {
+        return workspaceRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     @Override

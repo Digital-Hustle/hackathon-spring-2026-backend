@@ -4,12 +4,14 @@ import com.hustle.rag_workspace_ms.dto.WorkspaceDto;
 import com.hustle.rag_workspace_ms.dto.request.UpdateWorkspaceRq;
 import com.hustle.rag_workspace_ms.model.entity.Workspace;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface WorkspaceMapper {
 
+    @Mapping(target = "isFavourite", source = "isFavourite")
     WorkspaceDto convert(Workspace workspace);
 
     Workspace convert(UpdateWorkspaceRq workspace);

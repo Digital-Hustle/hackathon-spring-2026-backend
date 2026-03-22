@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface ChatMessageService {
 
     Page<Message> getByChatId(UUID workspaceId, Pageable pageable);
+
+    Message sendNew(UUID workspaceId, String content);
 }

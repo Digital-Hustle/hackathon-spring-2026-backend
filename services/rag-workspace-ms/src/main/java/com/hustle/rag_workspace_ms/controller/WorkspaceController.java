@@ -19,6 +19,9 @@ public interface WorkspaceController {
     @PostMapping
     WorkspaceDto create();
 
+    @GetMapping("/{id}")
+    WorkspaceDto getById(@PathVariable UUID id);
+
     @PutMapping("/{id}")
     WorkspaceDto update(@PathVariable UUID id, @RequestBody UpdateWorkspaceRq updateWorkspaceRq);
 

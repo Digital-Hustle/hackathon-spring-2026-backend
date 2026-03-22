@@ -15,6 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+// TODO
+//  что там с favourite и isActive +
+//  получение workspace по id + (но тут ещё поле на tag нужно поменять)
+//  добавление сообщения в чат +
+//  удаление файла
+//  при загрузке первого файла нейронка на основании контента предлагает title для workspace
+//  нейронка, которая отвечает в чате
+
 @RestController
 @RequiredArgsConstructor
 public class WorkspaceControllerImpl implements WorkspaceController {
@@ -34,6 +42,13 @@ public class WorkspaceControllerImpl implements WorkspaceController {
     @Override
     public WorkspaceDto create() {
         Workspace workspace = workspaceService.createDefault();
+
+        return workSpaceMapper.convert(workspace);
+    }
+
+    @Override
+    public WorkspaceDto getById(UUID id) {
+        Workspace workspace = workspaceService.getById(id);
 
         return workSpaceMapper.convert(workspace);
     }

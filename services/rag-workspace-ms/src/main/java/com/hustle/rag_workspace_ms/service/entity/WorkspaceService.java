@@ -10,6 +10,8 @@ public interface WorkspaceService {
 
     Page<Workspace> getAll(Pageable pageable);
 
+    Workspace getById(UUID id);
+
     Workspace createDefault();
 
     Workspace update(UUID id, Workspace workspace);

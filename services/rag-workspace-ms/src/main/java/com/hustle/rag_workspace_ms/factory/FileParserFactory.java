@@ -7,7 +7,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class FileParserFactory {
+public final class FileParserFactory {
 
     private final List<FileParser> parsers;
 

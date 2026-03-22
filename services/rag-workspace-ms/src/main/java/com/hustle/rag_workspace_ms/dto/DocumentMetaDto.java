@@ -22,6 +22,8 @@ public record DocumentMetaDto(
 
         String errorMessage,
 
+        Boolean isActive,
+
         UUID workspaceId,
 
         LocalDateTime createdAt
