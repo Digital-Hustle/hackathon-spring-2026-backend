@@ -15,6 +15,7 @@ public final class WorkspaceFactory {
         return Workspace.builder()
                 .id(id)
                 .title("Undefined")
+                .isFavourite(false)
                 .cardType(WorkspaceCardType.MEDIUM)
                 .build();
     }

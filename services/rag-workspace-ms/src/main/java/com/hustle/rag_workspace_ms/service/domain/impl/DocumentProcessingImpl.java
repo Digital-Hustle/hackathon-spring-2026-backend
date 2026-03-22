@@ -4,6 +4,7 @@ import com.hustle.rag_workspace_ms.factory.DocumentMetaFactory;
 import com.hustle.rag_workspace_ms.factory.FileParserFactory;
 import com.hustle.rag_workspace_ms.model.DocumentText;
 import com.hustle.rag_workspace_ms.model.entity.DocumentMeta;
+import com.hustle.rag_workspace_ms.service.domain.AsyncDocumentProcessor;
 import com.hustle.rag_workspace_ms.service.domain.DocumentProcessing;
 import com.hustle.rag_workspace_ms.service.entity.DocumentMetaService;
 import com.hustle.rag_workspace_ms.service.entity.DocumentService;
@@ -39,7 +40,7 @@ public class DocumentProcessingImpl implements DocumentProcessing {
 
     private final DocumentMetaService documentMetaService;
     private final DocumentService documentService;
-    private final AsyncDocumentProcessorImpl asyncDocumentProcessor;
+    private final AsyncDocumentProcessor asyncDocumentProcessor;
     private final FileParserFactory fileParserFactory;
 
     @Transactional

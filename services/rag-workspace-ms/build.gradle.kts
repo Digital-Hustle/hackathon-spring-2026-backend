@@ -110,6 +110,9 @@ dependencies {
     // minio
     implementation("io.minio:minio:${minioVersion}")
 
+    // swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
+
     // liquibase
     liquibaseRuntime("org.postgresql:postgresql:$postgresVersion")
     liquibaseRuntime("org.liquibase:liquibase-core:$liquibaseVersion")

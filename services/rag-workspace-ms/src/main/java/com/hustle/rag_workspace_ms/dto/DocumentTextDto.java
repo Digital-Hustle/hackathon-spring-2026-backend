@@ -1,4 +1,4 @@
-package com.hustle.rag_workspace_ms.dto.response;
+package com.hustle.rag_workspace_ms.dto;
 
 import java.util.UUID;
 
