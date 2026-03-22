@@ -2,7 +2,6 @@ package ru.digital_hustle.obCIdian.workspace_processor_ms.controller.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import ru.digital_hustle.obCIdian.workspace_processor_ms.controller.SummaryController;
@@ -40,7 +39,6 @@ public class SummaryControllerImpl implements SummaryController {
 
         DocumentTextRs response = fileContentFeignClient.getDocuments(request.getWorkspaceId());
         List<DocumentText> documents = response.getDocuments();
-        System.out.println(documents);
 
         if (documents == null || documents.isEmpty()) {
             return Mono.just(ResponseEntity.status(503).body("Не удалось загрузить контент из документов"));
@@ -97,7 +95,7 @@ public class SummaryControllerImpl implements SummaryController {
         return """
                 # РОЛЬ
                 Ты — старший бизнес-аналитик и профессиональный секретарь. Твоя задача — обрабатывать большие объемы текстовой информации и составлять по ним структурированные резюме (саммари) в строгом официально-деловом стиле.
-                                
+                
                 # ЗАДАЧА
                 Проанализируй предоставленный ниже текст и составь его краткое содержание.
                                 

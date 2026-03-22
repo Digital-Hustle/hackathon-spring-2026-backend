@@ -1,6 +1,7 @@
 package ru.digital_hustle.obCIdian.workspace_processor_ms.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SummaryYandexGptServiceImpl implements SummaryYandexGptService {
 
-    private static final String YANDEX_CLOUD_FOLDER = "b1g43athfi6adknk4fk5";
-    private static final String YANDEX_CLOUD_MODEL = "aliceai-llm";
+    @Value("${yandex.gpt.folder-id}")
+    private String folderId;
+    @Value("${yandex.gpt.model}")
+    private String model;
 
     private final WebClient yandexGptWebClient;
 
@@ -29,7 +32,7 @@ public class SummaryYandexGptServiceImpl implements SummaryYandexGptService {
 
     @Override
     public Mono<String> generateResponseAsync(String prompt, Double temperature, Integer maxTokens) {
-        String model = "gpt://" + YANDEX_CLOUD_FOLDER + "/" + YANDEX_CLOUD_MODEL;
+        String model = "gpt://" + folderId + "/" + this.model;
 
         SummaryYandexGptRq request = new SummaryYandexGptRq(
                 model,
@@ -60,13 +63,14 @@ public class SummaryYandexGptServiceImpl implements SummaryYandexGptService {
                 .onErrorResume(throwable -> Mono.just("Error calling Yandex GPT: " + throwable.getMessage()));
     }
 
+    @Transactional
     public Mono<String> generateAndSaveSummaryAsync(UUID workspaceId,
                                                     List<UUID> documentIds,
                                                     String prompt,
                                                     Double temperature,
                                                     Integer maxTokens) {
 
-        //summaryRepository.deleteAllByWorkspaceId(workspaceId);
+        summaryRepository.deleteAllByWorkspaceId(workspaceId);
 
         return generateResponseAsync(prompt, temperature, maxTokens)
                 .flatMap(summary -> {

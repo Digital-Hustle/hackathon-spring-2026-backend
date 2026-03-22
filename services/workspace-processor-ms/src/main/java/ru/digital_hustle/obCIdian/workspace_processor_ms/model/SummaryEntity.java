@@ -33,7 +33,7 @@ public class SummaryEntity {
     @Column(name = "document_ids")
     private List<UUID> documentIds;
 
-    @Column(name = "content")
+    @Column(name = "content", length = 5000)
     private String content;
 
     @Column(name = "created_at")
