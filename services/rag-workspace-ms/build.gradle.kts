@@ -244,10 +244,10 @@ tasks.named("check") {
 tasks.named("build") {
     dependsOn("check", "compileJava")
 }
-
-tasks.named("update") {
-    dependsOn("ensureSchemaExists")
-}
+//         TODO
+//tasks.named("update") {
+//    dependsOn("ensureSchemaExists")
+//}
 
 tasks.named("compileJava") {
     mustRunAfter("checkstyleMain")

@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableFeignClients
 @EnableConfigurationProperties(AppMinioProperties.class)
 @SpringBootApplication
-public class RagWorkspaceMsApplication {
+public class  RagWorkspaceMsApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(RagWorkspaceMsApplication.class, args);
