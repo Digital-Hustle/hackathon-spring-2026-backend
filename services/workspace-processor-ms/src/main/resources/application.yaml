@@ -1,0 +1,43 @@
+server:
+  port: 8081
+
+spring:
+  jmx:
+    enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/obCIdian_app_db
+    username: ...
+    password: ...
+    driver-class-name: org.postgresql.Driver
+  cloud:
+    config:
+      enabled: false
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+  main:
+    allow-bean-definition-overriding: true
+
+
+yandex:
+  gpt:
+    api-key: ...
+    base-url: https://ai.api.cloud.yandex.net/v1
+    folder-id: ...
+    model: aliceai-llm
+    timeout: 30s
+    max-retries: 3
+
+file:
+  storage:
+    base-url: http://192.168.0.104:4002
+
+feign:
+  client:
+    config:
+      default:
+        encoder: springEncoder
+      fileStorageClient:
+        connectTimeout: 5000
+        readTimeout: 30000
