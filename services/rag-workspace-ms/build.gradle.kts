@@ -101,7 +101,9 @@ dependencies {
 
     // cloud starters
     implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 
+    // ai starters
     implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M6")
 
     // db
@@ -109,9 +111,6 @@ dependencies {
 
     // minio
     implementation("io.minio:minio:${minioVersion}")
-
-    // swagger
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
 
     // liquibase
     liquibaseRuntime("org.postgresql:postgresql:$postgresVersion")

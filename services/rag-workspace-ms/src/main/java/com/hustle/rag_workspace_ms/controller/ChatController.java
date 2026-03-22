@@ -3,7 +3,6 @@ package com.hustle.rag_workspace_ms.controller;
 import com.hustle.rag_workspace_ms.dto.MessageDto;
 import com.hustle.rag_workspace_ms.dto.request.SendMessageRq;
 import com.hustle.rag_workspace_ms.dto.response.ChatRs;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,5 +15,5 @@ public interface ChatController {
     ChatRs getChats(@PathVariable UUID workspaceId, Pageable pageable);
 
     @PostMapping
-    MessageDto sendMessage(@PathVariable UUID workspaceId, @Valid @RequestBody SendMessageRq sendMessageRq);
+    MessageDto sendMessage(@PathVariable UUID workspaceId, @RequestBody SendMessageRq sendMessageRq);
 }

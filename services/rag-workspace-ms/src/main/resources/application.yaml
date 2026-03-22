@@ -27,3 +27,9 @@ minio:
   access-key: ${MINIO_USERNAME}
   secret-key: ${MINIO_KEY}
   bucket-name: ${MINIO_BUCKET}
+
+app:
+  ai-api:
+    model: gpt-oss-20b
+    url: https://hackai.centrinvest.ru:6630
+    key: hackaton2026
