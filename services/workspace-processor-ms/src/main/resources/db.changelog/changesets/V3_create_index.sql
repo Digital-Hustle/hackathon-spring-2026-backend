@@ -1,0 +1,1 @@
+CREATE INDEX idx_summaries_document_ids ON summaries_document_ids(document_id);

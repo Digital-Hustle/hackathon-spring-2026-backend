@@ -1,6 +1,6 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.5.7"
+	id("org.springframework.boot") version "3.5.0"
 	id("io.spring.dependency-management") version "1.1.7"
 
 //	id("org.liquibase.gradle") version "3.1.0"
@@ -37,16 +37,22 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
 	// cloud starters
-	implementation("org.springframework.cloud:spring-cloud-starter-config")
+	implementation("org.springframework.cloud:spring-cloud-starter-config"){
+		exclude(group = "org.springframework.boot", module = "spring-boot-starter-actuator")
+	}
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
 	// spring
 	implementation("org.springframework.data:spring-data-commons")
 
-	// persist
-	implementation("jakarta.persistence:jakarta.persistence-api:$jakartaPersistenceVersion")
+	// feign
+	implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.3.0")
+
+	// swagger
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
 	// minio
 	implementation("io.minio:minio:$minioVersion")
