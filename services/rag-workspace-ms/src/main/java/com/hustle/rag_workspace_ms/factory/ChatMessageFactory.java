@@ -1,6 +1,5 @@
 package com.hustle.rag_workspace_ms.factory;
 
-import com.hustle.rag_workspace_ms.model.entity.DocumentMeta;
 import com.hustle.rag_workspace_ms.model.entity.Message;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ChatMessageFactory {
 
-    public static Message newProcessingPhotoMetaInfo(UUID workspaceId, String content) {
+    public static Message newOwnerChatMessage(UUID workspaceId, String content) {
         return Message.builder()
                 .id(UUID.randomUUID())
                 .ownedByUser(true)
@@ -19,6 +18,15 @@ public final class ChatMessageFactory {
                 .workspaceId(workspaceId)
                 .createdAt(LocalDateTime.now())
                 .build();
+    }
 
+    public static Message newAiChatMessage(UUID workspaceId, String content) {
+        return Message.builder()
+                .id(UUID.randomUUID())
+                .ownedByUser(false)
+                .content(content)
+                .workspaceId(workspaceId)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 }
