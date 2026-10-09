@@ -11,5 +11,7 @@ public interface DocumentProcessing {
 
     DocumentMeta processUpload(UUID workspaceId, MultipartFile document);
 
+    void deleteDocument(UUID workspaceId, UUID documentId);
+
     List<DocumentText> getDocumentsContent(UUID workspaceId);
 }

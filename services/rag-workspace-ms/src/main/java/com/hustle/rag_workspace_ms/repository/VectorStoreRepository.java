@@ -96,6 +96,22 @@ public class VectorStoreRepository {
         return search(workspaceId, documentId, queryVector, topK);
     }
 
+    public void deleteByDocumentId(UUID workspaceId, UUID documentId) {
+        ensureCollection();
+
+        ObjectNode request = objectMapper.createObjectNode();
+        ArrayNode must = request.putObject("filter").putArray("must");
+        must.add(payloadMatch("workspaceId", workspaceId.toString()));
+        must.add(payloadMatch("metadata.documentId", documentId.toString()));
+
+        restTemplate.exchange(
+                collectionUri("/points/delete").queryParam("wait", true).toUriString(),
+                HttpMethod.POST,
+                new HttpEntity<>(request),
+                JsonNode.class
+        );
+    }
+
     private List<SearchResult> search(UUID workspaceId, UUID documentId, float[] queryVector, int topK) {
         validateVector(queryVector);
         if (topK < 1) {

@@ -6,6 +6,8 @@ import com.hustle.rag_workspace_ms.model.entity.DocumentMeta;
 import com.hustle.rag_workspace_ms.repository.VectorStoreRepository;
 import com.hustle.rag_workspace_ms.service.domain.AsyncDocumentProcessor;
 import com.hustle.rag_workspace_ms.service.entity.DocumentMetaService;
+import com.hustle.rag_workspace_ms.service.entity.DocumentService;
+import com.hustle.rag_workspace_ms.utils.DocumentObjectKey;
 import com.hustle.rag_workspace_ms.utils.FileParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +16,6 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.transformer.splitter.TextSplitter;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -32,12 +33,13 @@ public class AsyncDocumentProcessorImpl implements AsyncDocumentProcessor {
     private final EmbeddingModel embeddingModel;
     private final TextSplitter textSplitter;
     private final DocumentMetaService documentMetaService;
+    private final DocumentService documentService;
 
     @Async
-    public void processDocument(UUID workspaceId, DocumentMeta documentMeta, MultipartFile document) {
+    public void processDocument(UUID workspaceId, DocumentMeta documentMeta) {
         UUID documentId = documentMeta.getId();
 
-        try (InputStream is = document.getInputStream()) {
+        try (InputStream is = documentService.downloadDocument(DocumentObjectKey.from(documentMeta))) {
             // Парсинг
             FileParser parser = fileParserFactory.getParser(documentMeta.getContentType());
             String extractedText = parser.extractText(is, documentMeta.getOriginalName());

@@ -2,18 +2,25 @@ package com.hustle.rag_workspace_ms.service.domain.impl;
 
 import com.hustle.rag_workspace_ms.factory.DocumentMetaFactory;
 import com.hustle.rag_workspace_ms.factory.FileParserFactory;
+import com.hustle.rag_workspace_ms.enums.FileProcessingStatus;
 import com.hustle.rag_workspace_ms.model.DocumentText;
 import com.hustle.rag_workspace_ms.model.entity.DocumentMeta;
+import com.hustle.rag_workspace_ms.repository.VectorStoreRepository;
 import com.hustle.rag_workspace_ms.service.domain.AsyncDocumentProcessor;
 import com.hustle.rag_workspace_ms.service.domain.DocumentProcessing;
 import com.hustle.rag_workspace_ms.service.entity.DocumentMetaService;
 import com.hustle.rag_workspace_ms.service.entity.DocumentService;
+import com.hustle.rag_workspace_ms.utils.DocumentObjectKey;
 import com.hustle.rag_workspace_ms.utils.FileParser;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -26,7 +33,6 @@ import java.util.stream.Collectors;
 // TODO
 //  написать ручку на получение всех workspace +
 //  ручку Кире для аудио +
-//  НЕ ЗАБЫТЬ сделать ручку на удаление документа(вектора, минио + мета инфа)
 //  ручка на обновление состояния активности файла
 //  чат прямо в этом микросе
 //  подумать ещё с Киреной ручкой для генерации подкастов
@@ -41,6 +47,7 @@ public class DocumentProcessingImpl implements DocumentProcessing {
     private final DocumentService documentService;
     private final AsyncDocumentProcessor asyncDocumentProcessor;
     private final FileParserFactory fileParserFactory;
+    private final VectorStoreRepository vectorStoreRepository;
 
     @Transactional
     @Override
@@ -48,15 +55,36 @@ public class DocumentProcessingImpl implements DocumentProcessing {
         DocumentMeta documentMeta = DocumentMetaFactory.newProcessingPhotoMetaInfo(workspaceId, document);
         DocumentMeta createdDocumentMeta = documentMetaService.create(documentMeta);
 
-        asyncDocumentProcessor.processDocument(workspaceId, createdDocumentMeta, document);
-
-        String minioKey = "%s.%s".formatted(
-                createdDocumentMeta.getId(), FilenameUtils.getExtension(document.getOriginalFilename())
-        ); // TODO вообще это нужно в хелпер
-
-        documentService.save(minioKey, document);
+        documentService.save(DocumentObjectKey.from(createdDocumentMeta), document);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                asyncDocumentProcessor.processDocument(workspaceId, createdDocumentMeta);
+            }
+        });
 
         return createdDocumentMeta;
+    }
+
+    @Override
+    public void deleteDocument(UUID workspaceId, UUID documentId) {
+        DocumentMeta documentMeta;
+        try {
+            documentMeta = documentMetaService.getById(documentId);
+        } catch (EntityNotFoundException exception) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found", exception);
+        }
+
+        if (!workspaceId.equals(documentMeta.getWorkspaceId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found");
+        }
+        if (documentMeta.getStatus() == FileProcessingStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Document processing is still in progress");
+        }
+
+        vectorStoreRepository.deleteByDocumentId(workspaceId, documentId);
+        documentService.delete(DocumentObjectKey.from(documentMeta));
+        documentMetaService.delete(documentId);
     }
 
     @Override
@@ -66,7 +94,7 @@ public class DocumentProcessingImpl implements DocumentProcessing {
                 .toList();
         Map<String, DocumentMeta> keyToDocumentMap = documentsMeta.stream()
                 .collect(Collectors.toMap(
-                        doc -> "%s.%s".formatted(doc.getId(), doc.getExtension().toString().toLowerCase()),
+                        DocumentObjectKey::from,
                         Function.identity()
                 ));
 

@@ -49,6 +49,11 @@ public class DocumentControllerImpl implements DocumentController {
     }
 
     @Override
+    public void deleteDocument(UUID workspaceId, UUID documentId) {
+        documentProcessing.deleteDocument(workspaceId, documentId);
+    }
+
+    @Override
     public DocumentsTextRs receiveIds(UUID workspaceId) {
         List<DocumentText> documentsContent = documentProcessing.getDocumentsContent(workspaceId);
 

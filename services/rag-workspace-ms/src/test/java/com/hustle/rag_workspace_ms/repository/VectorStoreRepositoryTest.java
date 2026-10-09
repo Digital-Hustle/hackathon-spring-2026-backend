@@ -82,4 +82,37 @@ class VectorStoreRepositoryTest {
         ));
         server.verify();
     }
+
+    @Test
+    void deletesOnlyPointsForTheRequestedWorkspaceAndDocument() {
+        RestTemplate restTemplate = new RestTemplate();
+        MockRestServiceServer server = MockRestServiceServer.createServer(restTemplate);
+        VectorStoreRepository repository = new VectorStoreRepository(
+                restTemplate,
+                new ObjectMapper(),
+                org.mockito.Mockito.mock(EmbeddingModel.class),
+                "http://localhost:6333",
+                "rag-chunks",
+                3
+        );
+        UUID workspaceId = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+
+        server.expect(requestTo(COLLECTION_URL))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("""
+                        {"result":{"config":{"params":{"vectors":{"size":3}}}}}
+                        """, org.springframework.http.MediaType.APPLICATION_JSON));
+        server.expect(requestTo(COLLECTION_URL + "/points/delete?wait=true"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.filter.must[0].key").value("workspaceId"))
+                .andExpect(jsonPath("$.filter.must[0].match.value").value(workspaceId.toString()))
+                .andExpect(jsonPath("$.filter.must[1].key").value("metadata.documentId"))
+                .andExpect(jsonPath("$.filter.must[1].match.value").value(documentId.toString()))
+                .andRespond(withSuccess("{}", org.springframework.http.MediaType.APPLICATION_JSON));
+
+        repository.deleteByDocumentId(workspaceId, documentId);
+
+        server.verify();
+    }
 }

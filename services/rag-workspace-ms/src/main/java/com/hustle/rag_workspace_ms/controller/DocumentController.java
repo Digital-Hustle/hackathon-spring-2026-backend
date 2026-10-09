@@ -27,6 +27,10 @@ public interface DocumentController {
             @RequestBody UpdateDocumentActivityRq updateDocumentActivityRq
     );
 
+    @DeleteMapping("/{documentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteDocument(@PathVariable UUID workspaceId, @PathVariable UUID documentId);
+
     @GetMapping("/content")
     DocumentsTextRs receiveIds(@PathVariable UUID workspaceId);
 }
