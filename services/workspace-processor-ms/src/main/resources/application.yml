@@ -23,6 +23,7 @@ logging:
 
 yandex:
   gpt:
+    model: ${YANDEX_GPT_MODEL:yandexgpt-lite}
     api:
       key: ""
   tts:

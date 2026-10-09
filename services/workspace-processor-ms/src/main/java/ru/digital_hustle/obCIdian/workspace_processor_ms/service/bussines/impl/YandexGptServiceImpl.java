@@ -20,16 +20,18 @@ import java.util.List;
 public class YandexGptServiceImpl implements YandexGptService {
 
     private static final String YANDEX_CLOUD_FOLDER = "b1g43athfi6adknk4fk5";
-    private static final String YANDEX_CLOUD_MODEL = "yandexgpt-lite";
 
     @Value("${yandex.gpt.api.key}")
     private String apiKey;
+
+    @Value("${yandex.gpt.model:yandexgpt-lite}")
+    private String model;
 
     private final RestTemplate restTemplate;
 
     @Override
     public String generateResponse(String prompt, Double temperature, Integer maxTokens) {
-        String modelUri = "gpt://" + YANDEX_CLOUD_FOLDER + "/" + YANDEX_CLOUD_MODEL;
+        String modelUri = "gpt://" + YANDEX_CLOUD_FOLDER + "/" + model;
         double temp = temperature != null ? temperature : 0.7;
         int tokens = maxTokens != null ? maxTokens : 5000;
 

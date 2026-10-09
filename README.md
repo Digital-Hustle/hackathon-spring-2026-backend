@@ -68,6 +68,10 @@ Qdrant запускается вместе с остальной инфраст�
 `docker/docker-compose.infrastructure.yml` и доступен приложению на порту `6333`.
 Размер embedding и имя коллекции настраиваются через `QDRANT_VECTOR_SIZE` и
 `QDRANT_COLLECTION`.
+При запуске backend автоматически переносит старые chunks из `rag.vector_store`
+в Qdrant и удаляет старую таблицу и расширение только после успешной записи всех chunks.
+AI-модели можно переопределить через `AI_CHAT_MODEL`, `AI_EMBEDDING_MODEL` и
+`YANDEX_GPT_MODEL`; при замене embedding-модели также задайте ее размер в `QDRANT_VECTOR_SIZE`.
 
 ![upload.png](docs/upload.png)
 ![workspace.png](docs/workspace.png)

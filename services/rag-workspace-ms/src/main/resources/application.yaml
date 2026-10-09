@@ -13,7 +13,7 @@ spring:
       base-url: https://hackai.centrinvest.ru:6620
       embedding:
         options:
-          model: Qwen3-Embedding-0.6B
+          model: ${AI_EMBEDDING_MODEL:Qwen3-Embedding-0.6B}
 
   cloud:
     config:
@@ -30,7 +30,7 @@ minio:
 
 app:
   ai-api:
-    model: gpt-oss-20b
+    model: ${AI_CHAT_MODEL:gpt-oss-20b}
     url: https://hackai.centrinvest.ru:6630
     key: hackaton2026
   vector-store:
