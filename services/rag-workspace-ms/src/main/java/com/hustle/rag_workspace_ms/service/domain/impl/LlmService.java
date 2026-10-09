@@ -43,11 +43,6 @@ public class LlmService {
     }
 
     private String generateWithLlm(String prompt) {
-        // TODO: Интеграция с LLM API
-        // Пример для YandexGPT:
-        // return yandexGptService.complete(prompt);
-        aiGateway.sendMessageToModel(prompt);
-
-        return "[Заглушка] Ответ будет сгенерирован LLM. Контекст: " + prompt.substring(0, 200) + "...";
+        return aiGateway.sendMessageToModel(prompt);
     }
 }

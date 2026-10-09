@@ -50,7 +50,6 @@ public class DocumentControllerImpl implements DocumentController {
 
     @Override
     public DocumentsTextRs receiveIds(UUID workspaceId) {
-        // TODO тут нужно ещё поработать с флагом, чтоб отдавать только по активным файлам инфу
         List<DocumentText> documentsContent = documentProcessing.getDocumentsContent(workspaceId);
 
         return DocumentsTextRs.builder()

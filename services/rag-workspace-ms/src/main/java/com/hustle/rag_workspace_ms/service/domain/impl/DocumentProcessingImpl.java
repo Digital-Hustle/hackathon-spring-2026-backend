@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 //  чат прямо в этом микросе
 //  подумать ещё с Киреной ручкой для генерации подкастов
 //  точно ли я должен возвращать именно весь текст всех файлов
-//  (+добить логику, чтоб работать только с активными файлами, тип где статус isActive)
 
 @Slf4j
 @Service
@@ -62,8 +61,9 @@ public class DocumentProcessingImpl implements DocumentProcessing {
 
     @Override
     public List<DocumentText> getDocumentsContent(UUID workspaceId) {
-        // TODO дописать, чтобы доставать просто по workspaceId
-        List<DocumentMeta> documentsMeta = documentMetaService.getAllByOwnerId(workspaceId);
+        List<DocumentMeta> documentsMeta = documentMetaService.getAllByOwnerId(workspaceId).stream()
+                .filter(documentMeta -> Boolean.TRUE.equals(documentMeta.getIsActive()))
+                .toList();
         Map<String, DocumentMeta> keyToDocumentMap = documentsMeta.stream()
                 .collect(Collectors.toMap(
                         doc -> "%s.%s".formatted(doc.getId(), doc.getExtension().toString().toLowerCase()),
