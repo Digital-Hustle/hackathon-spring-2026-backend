@@ -3,9 +3,13 @@ spring:
     url: jdbc:postgresql://localhost:5432/rag_workspace_db?currentSchema=rag
     username: postgres
     password: root
-
   jpa:
     show-sql: true
     properties:
       hibernate:
         default_schema: rag
+
+app:
+  vector-store:
+    qdrant:
+      url: http://localhost:6333

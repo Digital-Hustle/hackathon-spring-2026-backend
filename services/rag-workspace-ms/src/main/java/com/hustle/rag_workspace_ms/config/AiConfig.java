@@ -4,6 +4,7 @@ import org.springframework.ai.transformer.splitter.TextSplitter;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 // TODO Ладншафт доступен по адресу https://hackai.centrinvest.ru:
 //  - порт 6620 - Эмбеддер (векторизация документов и текстов)
@@ -12,6 +13,11 @@ import org.springframework.context.annotation.Configuration;
 //  API ключ для доступа к моделям, hackaton2026
 @Configuration
 public class AiConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     @Bean
     public TextSplitter textSplitter() {

@@ -2,5 +2,11 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
 
+app:
+  vector-store:
+    qdrant:
+      collection: ${QDRANT_COLLECTION:rag-chunks}
+      vector-size: ${QDRANT_VECTOR_SIZE:1024}
+
 server:
   port: 4002

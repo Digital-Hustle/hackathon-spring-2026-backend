@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    image: postgres:16
     container_name: postgres-container
     ports:
       - "5432:5432"
@@ -15,6 +15,18 @@ services:
       - ../scripts/db-initializer.sh:/usr/local/bin/db-initializer.sh
       - ../scripts/custom-db-entrypoint.sh:/custom-db-entrypoint.sh
     entrypoint: /custom-db-entrypoint.sh
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.13.2
+    container_name: qdrant-container
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-volume:/qdrant/storage
+    networks:
+      - tourist-helper-network
     restart: unless-stopped
 
   vault:
@@ -54,3 +66,4 @@ volumes:
   postgres-volume:
   minio-volume:
   rabbitmq-volume:
+  qdrant-volume:
