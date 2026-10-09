@@ -1,6 +1,18 @@
 databaseChangeLog:
-  - includeAll:
-      path: changesets
+  - include:
+      file: changesets/260321-0952-create-workspace-table.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changesets/260321-0953-create-documents-meta-table.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changesets/260322-0159-create-chats-table.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changesets/260322-0200-create-messages-table.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changesets/260322-04330-create-notes-table.sql
       relativeToChangelogFile: true
   - includeAll:
       path: data

@@ -1,150 +1,213 @@
 package com.hustle.rag_workspace_ms.repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hustle.rag_workspace_ms.model.SearchResult;
 import com.hustle.rag_workspace_ms.model.VectorStoreChunk;
-import com.hustle.rag_workspace_ms.utils.JsonbUtils;
-import groovy.util.logging.Slf4j;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
 @Repository
-@RequiredArgsConstructor
 public class VectorStoreRepository {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final EmbeddingModel embeddingModel;
+    private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() { };
 
-    private final ObjectMapper objectMapper; // внедряем
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+    private final EmbeddingModel embeddingModel;
+    private final String qdrantUrl;
+    private final String collection;
+    private final int vectorSize;
+
+    private volatile boolean collectionReady;
+
+    public VectorStoreRepository(
+            RestTemplate restTemplate,
+            ObjectMapper objectMapper,
+            EmbeddingModel embeddingModel,
+            @Value("${app.vector-store.qdrant.url:http://localhost:6333}") String qdrantUrl,
+            @Value("${app.vector-store.qdrant.collection:rag-chunks}") String collection,
+            @Value("${app.vector-store.qdrant.vector-size:1024}") int vectorSize
+    ) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+        this.embeddingModel = embeddingModel;
+        this.qdrantUrl = qdrantUrl.replaceAll("/+$", "");
+        this.collection = collection;
+        this.vectorSize = vectorSize;
+    }
 
     public void saveChunk(UUID id, UUID workspaceId, String content, Map<String, Object> metadata, float[] vector) {
-        try {
-            String metadataJson = objectMapper.writeValueAsString(metadata);
-            String sql = """
-                        INSERT INTO vector_store (id, workspace_id, content, metadata, embedding)
-                        VALUES (?, ?, ?, ?::jsonb, ?)
-                    """;
-            jdbcTemplate.update(sql, id, workspaceId, content, metadataJson, vector);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize metadata", e);
-        }
+        validateVector(vector);
+        ensureCollection();
+
+        ObjectNode point = objectMapper.createObjectNode();
+        point.put("id", id.toString());
+        point.set("vector", toJsonVector(vector));
+
+        ObjectNode payload = point.putObject("payload");
+        payload.put("workspaceId", workspaceId.toString());
+        payload.put("content", content);
+        payload.set("metadata", objectMapper.valueToTree(metadata == null ? Map.of() : metadata));
+
+        ObjectNode request = objectMapper.createObjectNode();
+        request.putArray("points").add(point);
+        restTemplate.exchange(
+                collectionUri("/points").queryParam("wait", true).toUriString(),
+                HttpMethod.PUT,
+                new HttpEntity<>(request),
+                JsonNode.class
+        );
     }
 
     public List<VectorStoreChunk> findSimilar(String queryText, UUID workspaceId, int topK) {
         float[] vector = embeddingModel.embed(queryText);
-
-        String sql = """
-                    SELECT id, content, metadata, (embedding <=> ?) AS distance
-                    FROM vector_store
-                    WHERE workspace_id = ?
-                    ORDER BY embedding <=> ?
-                    LIMIT ?
-                """;
-
-        return jdbcTemplate.query(sql, new Object[]{vector, workspaceId, vector, topK},
-                (rs, rowNum) -> {
-                    UUID id = rs.getObject("id", UUID.class);
-                    String content = rs.getString("content");
-                    String metadataJson = rs.getString("metadata");
-                    Map<String, Object> metadata = JsonbUtils.fromJson(metadataJson);
-                    double distance = rs.getDouble("distance");
-                    return new VectorStoreChunk(id, content, metadata, distance);
-                });
+        return search(workspaceId, null, vector, topK).stream()
+                .map(result -> new VectorStoreChunk(
+                        result.id(), result.content(), result.metadata(), 1.0 - result.score()
+                ))
+                .toList();
     }
 
     public List<SearchResult> searchSimilar(UUID workspaceId, float[] queryVector, int topK) {
-        String vectorStr = vectorToString(queryVector);
-
-
-        String sql = """
-                    SELECT 
-                        id,
-                        content,
-                        metadata,
-                        1 - (embedding <=> '%s'::vector) as similarity_score
-                    FROM vector_store
-                    WHERE workspace_id = ?
-                    ORDER BY embedding <=> '%s'::vector
-                    LIMIT ?
-                """.formatted(vectorStr, vectorStr);
-
-        return jdbcTemplate.query(sql, searchResultRowMapper(), workspaceId, topK);
+        return search(workspaceId, null, queryVector, topK);
     }
 
     public List<SearchResult> searchSimilarByDocument(
             UUID workspaceId, UUID documentId, float[] queryVector, int topK
     ) {
-        String vectorStr = vectorToString(queryVector);
-
-        String sql = """
-                    SELECT 
-                        id,
-                        content,
-                        metadata,
-                        1 - (embedding <=> '%s'::vector) as similarity_score
-                    FROM vector_store
-                    WHERE workspace_id = ? AND (metadata->>'documentId')::uuid = ?
-                    ORDER BY embedding <=> '%s'::vector
-                    LIMIT ?
-                """.formatted(vectorStr, vectorStr);
-
-        return jdbcTemplate.query(sql, searchResultRowMapper(),
-                workspaceId, documentId, topK);
+        return search(workspaceId, documentId, queryVector, topK);
     }
 
-    // ✅ Исправлено: Locale.US для точки вместо запятой
-    private String vectorToString(float[] vector) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < vector.length; i++) {
-            if (i > 0) sb.append(",");
-            // ✅ Locale.US гарантирует точку как разделитель
-            sb.append(String.format(Locale.US, "%.8f", vector[i]));
+    private List<SearchResult> search(UUID workspaceId, UUID documentId, float[] queryVector, int topK) {
+        validateVector(queryVector);
+        if (topK < 1) {
+            throw new IllegalArgumentException("topK must be greater than zero");
         }
-        sb.append("]");
-        return sb.toString();
+        ensureCollection();
+
+        ObjectNode request = objectMapper.createObjectNode();
+        request.set("query", toJsonVector(queryVector));
+        request.put("limit", topK);
+        request.put("with_payload", true);
+
+        ObjectNode filter = request.putObject("filter");
+        ArrayNode must = filter.putArray("must");
+        must.add(payloadMatch("workspaceId", workspaceId.toString()));
+        if (documentId != null) {
+            must.add(payloadMatch("metadata.documentId", documentId.toString()));
+        }
+
+        ResponseEntity<JsonNode> response = restTemplate.exchange(
+                collectionUri("/points/query").toUriString(),
+                HttpMethod.POST,
+                new HttpEntity<>(request),
+                JsonNode.class
+        );
+
+        JsonNode points = response.getBody() == null
+                ? objectMapper.createArrayNode()
+                : response.getBody().path("result").path("points");
+        List<SearchResult> results = new ArrayList<>();
+        for (JsonNode point : points) {
+            JsonNode payload = point.path("payload");
+            JsonNode metadataNode = payload.path("metadata");
+            Map<String, Object> metadata = metadataNode.isObject()
+                    ? objectMapper.convertValue(metadataNode, MAP_TYPE)
+                    : Map.of();
+            double score = point.path("score").asDouble(0.0);
+            score = Math.max(0.0, Math.min(1.0, score));
+            results.add(new SearchResult(
+                    UUID.fromString(point.path("id").asText()),
+                    payload.path("content").asText(""),
+                    metadata,
+                    score,
+                    results.size() + 1
+            ));
+        }
+        return results;
     }
 
-    private RowMapper<SearchResult> searchResultRowMapper() {
-        return (ResultSet rs, int rowNum) -> {
-            try {
-                String metadataJson = rs.getString("metadata");
-                if (metadataJson == null || metadataJson.isEmpty()) {
-                    metadataJson = "{}";
-                }
+    private ObjectNode payloadMatch(String key, String value) {
+        ObjectNode condition = objectMapper.createObjectNode();
+        condition.put("key", key);
+        condition.putObject("match").put("value", value);
+        return condition;
+    }
 
-                @SuppressWarnings("unchecked")
-                Map<String, Object> metadata = objectMapper.readValue(metadataJson, Map.class);
+    private ArrayNode toJsonVector(float[] vector) {
+        ArrayNode values = objectMapper.createArrayNode();
+        for (float value : vector) {
+            values.add(value);
+        }
+        return values;
+    }
 
-                double score = rs.getDouble("similarity_score");
-                if (Double.isNaN(score) || Double.isInfinite(score)) {
-                    score = 0.0;
-                }
+    private void validateVector(float[] vector) {
+        if (vector == null || vector.length != vectorSize) {
+            throw new IllegalArgumentException(
+                    "Expected an embedding with " + vectorSize + " dimensions"
+            );
+        }
+    }
 
-                return new SearchResult(
-                        rs.getObject("id", UUID.class),
-                        rs.getString("content"),
-                        metadata,
-                        score,
-                        rowNum + 1
-                );
-
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Failed to parse meta " + e.getMessage(), e);
-            } catch (SQLException e) {
-                throw new RuntimeException("SQL error: " + e.getMessage(), e);
+    private void ensureCollection() {
+        if (collectionReady) {
+            return;
+        }
+        synchronized (this) {
+            if (collectionReady) {
+                return;
             }
-        };
+            String uri = collectionUri("").toUriString();
+            try {
+                JsonNode collectionInfo = restTemplate.getForObject(uri, JsonNode.class);
+                int existingVectorSize = collectionInfo == null
+                        ? -1
+                        : collectionInfo.path("result").path("config").path("params")
+                                .path("vectors").path("size").asInt(-1);
+                if (existingVectorSize != -1 && existingVectorSize != vectorSize) {
+                    throw new IllegalStateException(
+                            "Qdrant collection " + collection + " has " + existingVectorSize
+                                    + " dimensions; configured embeddings have " + vectorSize
+                    );
+                }
+            } catch (HttpClientErrorException.NotFound exception) {
+                ObjectNode vectorConfig = objectMapper.createObjectNode();
+                vectorConfig.put("size", vectorSize);
+                vectorConfig.put("distance", "Cosine");
+                ObjectNode request = objectMapper.createObjectNode();
+                request.set("vectors", vectorConfig);
+                try {
+                    restTemplate.exchange(uri, HttpMethod.PUT, new HttpEntity<>(request), JsonNode.class);
+                } catch (HttpClientErrorException.Conflict conflict) {
+                    log.debug("Qdrant collection {} was created concurrently", collection);
+                }
+            }
+            collectionReady = true;
+        }
+    }
+
+    private UriComponentsBuilder collectionUri(String suffix) {
+        return UriComponentsBuilder.fromHttpUrl(qdrantUrl)
+                .pathSegment("collections", collection)
+                .path(suffix);
     }
 }

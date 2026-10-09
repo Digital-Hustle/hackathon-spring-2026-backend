@@ -3,3 +3,8 @@ spring:
     url: jdbc:postgresql://postgres:5432/rag_workspace_db?currentSchema=rag
     username: postgres
     password: root
+
+app:
+  vector-store:
+    qdrant:
+      url: http://qdrant:6333
