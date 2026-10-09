@@ -23,7 +23,7 @@ logging:
 
 yandex:
   gpt:
-    model: ${YANDEX_GPT_MODEL:yandexgpt-lite}
+    model: ${YANDEX_GPT_MODEL:yandexgpt/latest}
     api:
       key: ""
   tts:
@@ -32,7 +32,7 @@ yandex:
 
 services:
   rag:
-    url: ""
+    url: ${SERVICES_RAG_URL:http://localhost:8080}
 
 minio:
   endpoint: http://localhost:9000

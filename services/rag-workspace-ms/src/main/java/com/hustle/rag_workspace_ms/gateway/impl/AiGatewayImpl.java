@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class AiGatewayImpl implements AiGateway {
 
         ChatCompletionRq chatCompletionRq = ChatCompletionRq.builder()
                 .model(model)
-                .message(aiMessageDto)
+                .messages(List.of(aiMessageDto))
                 .build();
 
         ChatCompletionRs response = aiFeignClient.completions(chatCompletionRq);

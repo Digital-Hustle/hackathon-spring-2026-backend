@@ -24,7 +24,7 @@ public class YandexGptServiceImpl implements YandexGptService {
     @Value("${yandex.gpt.api.key}")
     private String apiKey;
 
-    @Value("${yandex.gpt.model:yandexgpt-lite}")
+    @Value("${yandex.gpt.model:yandexgpt/latest}")
     private String model;
 
     private final RestTemplate restTemplate;

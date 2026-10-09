@@ -9,7 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ci_trainee.authms.dto.request.UserLoginRs;
+import ru.ci_trainee.authms.dto.request.UserLoginRq;
 import ru.ci_trainee.authms.dto.response.JwtRs;
 import ru.ci_trainee.authms.exception.exception.UserNotFoundException;
 import ru.ci_trainee.authms.model.User;
@@ -49,7 +49,7 @@ public class AuthServiceTest {
                 .isActive(true)
                 .build();
 
-        var request = new UserLoginRs("testuser", "password");
+        var request = new UserLoginRq("testuser", "password");
         var expectedResponse = JwtRs.builder()
                 .id(userId)
                 .username("testuser")
@@ -80,7 +80,7 @@ public class AuthServiceTest {
 
         when(userService.getUser("inactive")).thenReturn(inactiveUser);
 
-        assertThatThrownBy(() -> authService.login(new UserLoginRs("inactive", "pass")))
+        assertThatThrownBy(() -> authService.login(new UserLoginRq("inactive", "pass")))
                 .isInstanceOf(UserNotFoundException.class);
     }
 
@@ -97,7 +97,7 @@ public class AuthServiceTest {
                 .when(authenticationManager).authenticate(any());
 
         // Act & Assert
-        assertThatThrownBy(() -> authService.login(new UserLoginRs("testuser", "wrongpass")))
+        assertThatThrownBy(() -> authService.login(new UserLoginRq("testuser", "wrongpass")))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid credentials");
     }

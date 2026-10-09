@@ -9,8 +9,8 @@ spring:
 
   ai:
     openai:
-      api-key: hackaton2026
-      base-url: https://hackai.centrinvest.ru:6620
+      api-key: ${AI_EMBEDDING_API_KEY:hackaton2026}
+      base-url: ${AI_EMBEDDING_URL:https://hackai.centrinvest.ru:6620}
       embedding:
         options:
           model: ${AI_EMBEDDING_MODEL:Qwen3-Embedding-0.6B}
@@ -31,8 +31,8 @@ minio:
 app:
   ai-api:
     model: ${AI_CHAT_MODEL:gpt-oss-20b}
-    url: https://hackai.centrinvest.ru:6630
-    key: hackaton2026
+    url: ${AI_CHAT_URL:https://hackai.centrinvest.ru:6630}
+    key: ${AI_CHAT_API_KEY:hackaton2026}
   vector-store:
     qdrant:
       url: ${QDRANT_URL:http://localhost:6333}

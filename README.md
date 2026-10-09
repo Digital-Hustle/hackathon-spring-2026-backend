@@ -73,6 +73,26 @@ Qdrant запускается вместе с остальной инфраст�
 AI-модели можно переопределить через `AI_CHAT_MODEL`, `AI_EMBEDDING_MODEL` и
 `YANDEX_GPT_MODEL`; при замене embedding-модели также задайте ее размер в `QDRANT_VECTOR_SIZE`.
 
+#### Локальные AI-модели через Docker
+
+Для разработки можно запускать локальный Ollama с GPU и хранить модели в Docker volume:
+для генерации используется [открытая GigaChat 3.1 Lightning от Сбера](https://huggingface.co/ai-sage/GigaChat3.1-10B-A1.8B-GGUF)
+в квантизации Q4_K_M (10 млрд параметров, 1,8 млрд активных; около 6,5 ГБ),
+для эмбеддингов — Qwen3-Embedding-0.6B (1024 измерения).
+
+```bash
+docker compose -f docker/docker-compose.ollama.yml up -d
+docker exec sber-hack-ollama ollama pull Bored/GigaChat3.1-10B-A1.8B-q4_K_M
+docker exec sber-hack-ollama ollama pull qwen3-embedding:0.6b
+```
+
+Для backend-контейнера задайте `AI_CHAT_URL=http://host.docker.internal:11434`,
+`AI_CHAT_MODEL=Bored/GigaChat3.1-10B-A1.8B-q4_K_M`, `AI_CHAT_API_KEY=ollama`,
+`AI_EMBEDDING_URL=http://host.docker.internal:11434/v1`,
+`AI_EMBEDDING_MODEL=qwen3-embedding:0.6b`, `AI_EMBEDDING_API_KEY=ollama` и
+`QDRANT_VECTOR_SIZE=1024`. Для процесса, запущенного непосредственно на хосте,
+замените `host.docker.internal` на `localhost`.
+
 ![upload.png](docs/upload.png)
 ![workspace.png](docs/workspace.png)
 
